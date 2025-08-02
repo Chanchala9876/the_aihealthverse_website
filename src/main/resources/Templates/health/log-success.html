@@ -1,0 +1,228 @@
+<!-- File: src/main/resources/templates/health/log-success.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}">Health Entry Logged</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .success-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            margin: 20px auto;
+            max-width: 900px;
+            overflow: hidden;
+        }
+        
+        .success-header {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .success-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .entry-summary {
+            background: #f8f9fa;
+            border-left: 5px solid #4CAF50;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 8px;
+        }
+        
+        .entry-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px 0;
+        }
+        
+        .entry-icon {
+            width: 30px;
+            text-align: center;
+            margin-right: 15px;
+            color: #667eea;
+        }
+        
+        .ai-suggestions {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px;
+            margin: 20px;
+            border-radius: 12px;
+            position: relative;
+        }
+        
+        .ai-suggestions::before {
+            content: '🤖';
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            background: white;
+            padding: 5px 10px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+        }
+        
+        .suggestion-content {
+            margin-top: 10px;
+            line-height: 1.7;
+            font-size: 1.1rem;
+            white-space: pre-line;
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-custom {
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .btn-primary-custom {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+        }
+        
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            color: white;
+        }
+        
+        .btn-secondary-custom {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+        
+        .btn-secondary-custom:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="success-container">
+            <!-- Success Header -->
+            <div class="success-header">
+                <i class="fas fa-check-circle success-icon"></i>
+                <h1 class="mb-0">Health Entry Logged Successfully!</h1>
+                <p class="mb-0 mt-2">Your data has been saved and analyzed by our AI health assistant</p>
+            </div>
+            
+            <!-- Entry Summary -->
+            <div class="entry-summary">
+                <h3 class="mb-3"><i class="fas fa-clipboard-list me-2"></i>Today's Health Entry Summary</h3>
+                
+                <div class="entry-item">
+                    <i class="fas fa-smile entry-icon"></i>
+                    <strong>Mood:</strong> <span th:text="${entry.mood}" class="ms-2">Mood</span>
+                </div>
+                
+                <div class="entry-item">
+                    <i class="fas fa-utensils entry-icon"></i>
+                    <strong>Meals:</strong> <span th:text="${entry.meals}" class="ms-2">Meals</span>
+                </div>
+                
+                <div class="entry-item" th:if="${entry.symptoms != null and !entry.symptoms.isEmpty()}">
+                    <i class="fas fa-stethoscope entry-icon"></i>
+                    <strong>Symptoms:</strong> <span th:text="${entry.symptoms}" class="ms-2">Symptoms</span>
+                </div>
+                
+                <div class="entry-item">
+                    <i class="fas fa-bed entry-icon"></i>
+                    <strong>Sleep Duration:</strong> <span th:text="${entry.sleepHours} + ' hours'" class="ms-2">Sleep</span>
+                </div>
+                
+                <div class="entry-item" th:if="${entry.notes != null and !entry.notes.isEmpty()}">
+                    <i class="fas fa-sticky-note entry-icon"></i>
+                    <strong>Additional Notes:</strong> <span th:text="${entry.notes}" class="ms-2">Notes</span>
+                </div>
+            </div>
+            
+            <!-- AI Suggestions -->
+            <div class="ai-suggestions">
+                <h3 class="mb-3"><i class="fas fa-brain me-2"></i>Personalized AI Health Recommendations</h3>
+                <div class="suggestion-content" th:text="${suggestion}">
+                    Your personalized wellness recommendations will appear here...
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a href="/health/log" class="btn btn-custom btn-primary-custom">
+                    <i class="fas fa-plus me-2"></i>Log Another Entry
+                </a>
+                <a href="/health/entries" class="btn btn-custom btn-secondary-custom">
+                    <i class="fas fa-list me-2"></i>View All Entries
+                </a>
+                <a href="/health/analysis" class="btn btn-custom btn-secondary-custom">
+                    <i class="fas fa-chart-line me-2"></i>Health Analysis
+                </a>
+                <a href="/dashboard" class="btn btn-custom btn-secondary-custom">
+                    <i class="fas fa-home me-2"></i>Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Auto-scroll to AI suggestions -->
+    <script>
+        // Smooth scroll to AI suggestions after page load
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.querySelector('.ai-suggestions').scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

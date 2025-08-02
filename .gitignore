@@ -1,0 +1,25 @@
+# Maven
+/target/
+
+# IntelliJ IDEA
+*.iml
+.idea/
+
+# Eclipse
+*.classpath
+*.project
+*.settings/
+
+# VS Code
+.vscode/
+
+# OS generated
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Sensitive files
+src/main/resources/application.properties
+*.env

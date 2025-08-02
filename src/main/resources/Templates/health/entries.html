@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Health Entries - HealthVerse</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #4F46E5;
+            --secondary-color: #7C3AED;
+            --success-color: #10B981;
+            --warning-color: #F59E0B;
+            --danger-color: #EF4444;
+            --light-bg: #F8FAFC;
+            --dark-text: #1F2937;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--primary-color) !important;
+        }
+        
+        .nav-link {
+            font-weight: 500;
+            color: var(--dark-text) !important;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: var(--primary-color) !important;
+        }
+        
+        .main-content {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin: 2rem auto;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .entry-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--primary-color);
+            transition: all 0.3s ease;
+        }
+        
+        .entry-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .mood-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        .mood-happy { background-color: #D1FAE5; color: #065F46; }
+        .mood-good { background-color: #DBEAFE; color: #1E40AF; }
+        .mood-neutral { background-color: #FEF3C7; color: #92400E; }
+        .mood-tired { background-color: #EDE9FE; color: #5B21B6; }
+        .mood-stressed { background-color: #FEE2E2; color: #991B1B; }
+        .mood-sad { background-color: #F3F4F6; color: #374151; }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            border-radius: 10px;
+            padding: 12px 24px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+        }
+        
+        .footer {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+        
+        .stats-summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .filter-section {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-heartbeat me-2"></i>HealthVerse
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="fas fa-home me-1"></i>Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard"><i class="fas fa-chart-line me-1"></i>Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/health/log"><i class="fas fa-plus me-1"></i>Log Health</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/health/entries"><i class="fas fa-list me-1"></i>Entries</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/health/analysis"><i class="fas fa-brain me-1"></i>Analysis</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/reminders"><i class="fas fa-bell me-1"></i>Reminders</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/about"><i class="fas fa-info-circle me-1"></i>About</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="main-content">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h1 class="mb-3">
+                        <i class="fas fa-list me-2"></i>Health Entries
+                    </h1>
+                    <p class="text-muted">View and manage your health tracking history</p>
+                </div>
+            </div>
+            
+            <!-- Stats Summary -->
+            <div class="stats-summary">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <h3>7</h3>
+                        <p>Total Entries</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3>7.2</h3>
+                        <p>Avg Sleep Hours</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3>85%</h3>
+                        <p>Positive Mood</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3>3</h3>
+                        <p>This Week</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Filters -->
+            <div class="filter-section">
+                <div class="row align-items-center">
+                    <div class="col-md-4">
+                        <label class="form-label">Filter by Mood:</label>
+                        <select class="form-select">
+                            <option value="">All Moods</option>
+                            <option value="happy">Happy</option>
+                            <option value="good">Good</option>
+                            <option value="neutral">Neutral</option>
+                            <option value="tired">Tired</option>
+                            <option value="stressed">Stressed</option>
+                            <option value="sad">Sad</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Date Range:</label>
+                        <select class="form-select">
+                            <option value="7">Last 7 days</option>
+                            <option value="30">Last 30 days</option>
+                            <option value="90">Last 90 days</option>
+                            <option value="all">All time</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">&nbsp;</label>
+                        <div>
+                            <a href="/health/log" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Add New Entry
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Entries List -->
+            <div class="row">
+                <div class="col-12">
+                    <!-- Check if user has entries -->
+                    <div th:if="${entries != null and #lists.size(entries) > 0}">
+                        <!-- Real User Entries -->
+                        <div th:each="entry : ${entries}" class="entry-card">
+                            <div class="row align-items-stretch">
+                                <div class="col-md-2 d-flex flex-column justify-content-center">
+                                    <span th:class="'mood-badge mood-' + ${entry.mood.toLowerCase()}" th:text="${entry.mood}">Happy</span>
+                                    <div class="text-muted mt-1" th:text="${#temporals.format(entry.entryDate, 'MMM dd, yyyy')}">Today</div>
+                                </div>
+                                <div class="col-md-3 d-flex flex-column justify-content-center">
+                                    <strong>Meals:</strong>
+                                    <div class="text-muted small" th:text="${entry.meals != null ? #strings.arrayJoin(entry.meals, ', ') : 'N/A'}">Breakfast: oatmeal with berries</div>
+                                </div>
+                                <div class="col-md-2 d-flex flex-column justify-content-center">
+                                    <strong>Sleep:</strong>
+                                    <div class="text-muted" th:text="${entry.sleepHours} + ' hours'">7.5 hours</div>
+                                </div>
+                                <div class="col-md-2 d-flex flex-column justify-content-center">
+                                    <strong>Symptoms:</strong>
+                                    <div class="text-muted" th:text="${entry.symptoms != null and #lists.size(entry.symptoms) > 0 ? #strings.arrayJoin(entry.symptoms, ', ') : 'None'}">None</div>
+                                </div>
+                                <div class="col-md-3 d-flex flex-column justify-content-center">
+                                    <div class="text-muted small">
+                                        <i class="fas fa-lightbulb me-1"></i>
+                                        <strong>AI Suggestion:</strong>
+                                        <span th:text="${entry.aiSuggestion != null and entry.aiSuggestion.length() > 75 ? entry.aiSuggestion.substring(0, 75) + '...' : entry.aiSuggestion}">Your AI suggestion appears here.</span>
+                                        <a th:if="${entry.aiSuggestion != null and entry.aiSuggestion.length() > 75}" href="#" data-bs-toggle="modal" data-bs-target="#aiModal" th:data-suggestion="${entry.aiSuggestion}" onclick="showFullSuggestion(this)">Read more</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Demo/Dummy Entries for New Users -->
+                    <div th:if="${entries == null or #lists.size(entries) == 0}">
+                        <div class="alert alert-info text-center mb-4">
+                            <h5><i class="fas fa-info-circle me-2"></i>Welcome to HealthVerse!</h5>
+                            <p class="mb-0">Below are sample entries to show you how our platform works. Start logging your health data to see your personalized entries here!</p>
+                        </div>
+                        
+                        <!-- Demo Entry 1 -->
+                        <div class="entry-card">
+                            <div class="row align-items-stretch">
+                                <div class="col-md-2 d-flex flex-column justify-content-center">
+                                    <span class="mood-badge mood-happy">Happy</span>
+                                    <div class="text-muted mt-1">Today</div>
+                                </div>
+                                <div class="col-md-3 d-flex flex-column justify-content-center">
+                                    <strong>Meals:</strong>
+                                    <div class="text-muted small">Breakfast: oatmeal with berries, Lunch: chicken salad</div>
+                                </div>
+                                <div class="col-md-2 d-flex flex-column justify-content-center">
+                                    <strong>Sleep:</strong>
+                                    <div class="text-muted">7.5 hours</div>
+                                </div>
+                                <div class="col-md-2 d-flex flex-column justify-content-center">
+                                    <strong>Symptoms:</strong>
+                                    <div class="text-muted">None</div>
+                                </div>
+                                <div class="col-md-3 d-flex flex-column justify-content-center">
+                                    <div class="text-muted small">
+                                        <i class="fas fa-lightbulb me-1"></i>
+                                        <strong>AI Suggestion:</strong> Great job maintaining a balanced diet! Consider adding more leafy greens for additional nutrients.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Demo Entry 2 -->
+                        <div class="entry-card">
+                            <div class="row align-items-stretch">
+                                <div class="col-md-2 d-flex flex-column justify-content-center">
+                                    <span class="mood-badge mood-good">Good</span>
+                                    <div class="text-muted mt-1">Yesterday</div>
+                                </div>
+                                <div class="col-md-3 d-flex flex-column justify-content-center">
+                                    <strong>Meals:</strong>
+                                    <div class="text-muted small">Breakfast: smoothie bowl, Lunch: quinoa salad</div>
+                                </div>
+                                <div class="col-md-2 d-flex flex-column justify-content-center">
+                                    <strong>Sleep:</strong>
+                                    <div class="text-muted">8 hours</div>
+                                </div>
+                                <div class="col-md-2 d-flex flex-column justify-content-center">
+                                    <strong>Symptoms:</strong>
+                                    <div class="text-muted">None</div>
+                                </div>
+                                <div class="col-md-3 d-flex flex-column justify-content-center">
+                                    <div class="text-muted small">
+                                        <i class="fas fa-lightbulb me-1"></i>
+                                        <strong>AI Suggestion:</strong> Excellent sleep duration! Your consistent 8-hour pattern is contributing to your positive mood.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Demo Entry 3 -->
+                        <div class="entry-card">
+                            <div class="row align-items-stretch">
+                                <div class="col-md-2 d-flex flex-column justify-content-center">
+                                    <span class="mood-badge mood-neutral">Neutral</span>
+                                    <div class="text-muted mt-1">2 days ago</div>
+                                </div>
+                                <div class="col-md-3 d-flex flex-column justify-content-center">
+                                    <strong>Meals:</strong>
+                                    <div class="text-muted small">Breakfast: toast with avocado, Lunch: pasta</div>
+                                </div>
+                                <div class="col-md-2 d-flex flex-column justify-content-center">
+                                    <strong>Sleep:</strong>
+                                    <div class="text-muted">6.5 hours</div>
+                                </div>
+                                <div class="col-md-2 d-flex flex-column justify-content-center">
+                                    <strong>Symptoms:</strong>
+                                    <div class="text-muted">Slight headache</div>
+                                </div>
+                                <div class="col-md-3 d-flex flex-column justify-content-center">
+                                    <div class="text-muted small">
+                                        <i class="fas fa-lightbulb me-1"></i>
+                                        <strong>AI Suggestion:</strong> Consider increasing your sleep duration. The slight headache might be related to insufficient rest.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <nav aria-label="Entries pagination">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1">Previous</a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">Next</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="fas fa-heartbeat me-2"></i>HealthVerse</h5>
+                    <p class="text-muted">Your personal health journal with AI-powered insights.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="text-muted">&copy; 2024 HealthVerse. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- AI Suggestion Modal -->
+    <div class="modal fade" id="aiModal" tabindex="-1" aria-labelledby="aiModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="aiModalLabel">
+                        <i class="fas fa-brain me-2"></i>Full AI Health Suggestion
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-robot me-2"></i>
+                        <strong>AI-Generated Health Recommendation</strong>
+                    </div>
+                    <p id="fullSuggestion" style="white-space: pre-line; line-height: 1.7;">Your full AI suggestion will appear here.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="window.print()">Print Suggestion</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        function showFullSuggestion(element) {
+            const suggestion = element.getAttribute('data-suggestion');
+            document.getElementById('fullSuggestion').textContent = suggestion;
+        }
+    </script>
+</body>
+</html>

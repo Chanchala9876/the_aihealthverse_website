@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Create Reminder - HealthVerse</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+        }
+        .main-content {
+            margin-top: 80px;
+            padding: 40px 0;
+        }
+        .form-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 12px 15px;
+            font-size: 16px;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .btn-create {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .btn-create:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            color: white;
+        }
+        .type-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .type-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .type-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        .type-card.selected {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary" href="/dashboard">
+                <i class="fas fa-heartbeat me-2"></i>HealthVerse
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/dashboard">Dashboard</a>
+                <a class="nav-link" href="/reminder">My Reminders</a>
+                <form method="post" action="/logout" class="d-inline">
+                    <button type="submit" class="btn btn-outline-danger btn-sm">Logout</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="form-card">
+                        <div class="text-center mb-4">
+                            <h1 class="text-primary">
+                                <i class="fas fa-plus-circle me-3"></i>Create New Reminder
+                            </h1>
+                            <p class="text-muted">Stay on top of your health goals with personalized reminders</p>
+                        </div>
+
+                        <form method="post" action="/reminder/create">
+                            <!-- Reminder Type Selection -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Reminder Type *</label>
+                                <div class="row g-3">
+                                    <div class="col-md-3">
+                                        <div class="card type-card h-100 text-center p-3" data-type="medication">
+                                            <div class="type-icon text-success">
+                                                <i class="fas fa-pills"></i>
+                                            </div>
+                                            <h6>Medication</h6>
+                                            <small class="text-muted">Pills, treatments</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card type-card h-100 text-center p-3" data-type="appointment">
+                                            <div class="type-icon text-primary">
+                                                <i class="fas fa-calendar-check"></i>
+                                            </div>
+                                            <h6>Appointment</h6>
+                                            <small class="text-muted">Doctor visits</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card type-card h-100 text-center p-3" data-type="exercise">
+                                            <div class="type-icon text-warning">
+                                                <i class="fas fa-dumbbell"></i>
+                                            </div>
+                                            <h6>Exercise</h6>
+                                            <small class="text-muted">Workouts, walks</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card type-card h-100 text-center p-3" data-type="general">
+                                            <div class="type-icon text-secondary">
+                                                <i class="fas fa-bell"></i>
+                                            </div>
+                                            <h6>General</h6>
+                                            <small class="text-muted">Other reminders</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="type" id="selectedType" required>
+                            </div>
+
+                            <!-- Title -->
+                            <div class="mb-4">
+                                <label for="title" class="form-label fw-bold">
+                                    <i class="fas fa-heading me-2"></i>Title *
+                                </label>
+                                <input type="text" class="form-control" id="title" name="title" 
+                                       placeholder="e.g., Take morning vitamins" required>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="mb-4">
+                                <label for="description" class="form-label fw-bold">
+                                    <i class="fas fa-align-left me-2"></i>Description
+                                </label>
+                                <textarea class="form-control" id="description" name="description" rows="3"
+                                          placeholder="Add any additional details about this reminder..."></textarea>
+                            </div>
+
+                            <!-- Date and Time -->
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label for="reminderDate" class="form-label fw-bold">
+                                        <i class="fas fa-calendar me-2"></i>Date *
+                                    </label>
+                                    <input type="date" class="form-control" id="reminderDate" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="reminderTime" class="form-label fw-bold">
+                                        <i class="fas fa-clock me-2"></i>Time *
+                                    </label>
+                                    <input type="time" class="form-control" id="reminderTimeInput" required>
+                                </div>
+                            </div>
+
+                            <!-- Hidden combined datetime input -->
+                            <input type="hidden" name="reminderTime" id="reminderTime">
+
+                            <!-- Submit Buttons -->
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-create btn-lg me-3">
+                                    <i class="fas fa-save me-2"></i>Create Reminder
+                                </button>
+                                <a href="/reminder" class="btn btn-outline-secondary btn-lg">
+                                    <i class="fas fa-arrow-left me-2"></i>Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Type selection
+        document.querySelectorAll('.type-card').forEach(card => {
+            card.addEventListener('click', function() {
+                // Remove selected class from all cards
+                document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
+                
+                // Add selected class to clicked card
+                this.classList.add('selected');
+                
+                // Set the hidden input value
+                document.getElementById('selectedType').value = this.dataset.type;
+                
+                // Update title placeholder based on type
+                const titleInput = document.getElementById('title');
+                const placeholders = {
+                    'medication': 'e.g., Take morning vitamins',
+                    'appointment': 'e.g., Doctor appointment at 2 PM',
+                    'exercise': 'e.g., 30-minute walk in the park',
+                    'general': 'e.g., Check blood pressure'
+                };
+                titleInput.placeholder = placeholders[this.dataset.type];
+            });
+        });
+
+        // Set minimum date to today
+        document.getElementById('reminderDate').min = new Date().toISOString().split('T')[0];
+        
+        // Set default date to today
+        document.getElementById('reminderDate').value = new Date().toISOString().split('T')[0];
+
+        // Form submission - combine date and time
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const date = document.getElementById('reminderDate').value;
+            const time = document.getElementById('reminderTimeInput').value;
+            
+            if (date && time) {
+                const combinedDateTime = date + 'T' + time;
+                document.getElementById('reminderTime').value = combinedDateTime;
+            }
+            
+            // Validate type selection
+            if (!document.getElementById('selectedType').value) {
+                e.preventDefault();
+                alert('Please select a reminder type');
+                return false;
+            }
+        });
+
+        // Auto-focus first input
+        document.addEventListener('DOMContentLoaded', function() {
+            // Pre-select medication type as default
+            document.querySelector('[data-type="medication"]').click();
+        });
+    </script>
+</body>
+</html>
