@@ -1,22 +1,19 @@
-# HealthVerse - Personal Health Journal with AI Tips
+# HealthTracker - Personal Health Journal with AI Tips
 
-HealthVerse is a comprehensive health tracking application that combines daily health logging with AI-powered insights and recommendations. Built with Spring Boot, MongoDB, and OpenAI integration, it provides users with personalized wellness advice based on their health data.
+HealthTracker is a comprehensive health tracking application that combines daily health logging with AI-powered insights and recommendations. Built with Spring Boot, MongoDB, and Ollama integration (via Spring AI), it provides users with personalized wellness advice based on their health data.
 
 ## 🌟 Features
 
 ### Core Features
 - **Daily Health Logging**: Track mood, meals, sleep, and symptoms
-- **AI-Powered Insights**: Get personalized wellness recommendations using OpenAI
+- **AI-Powered Insights**: Get personalized wellness recommendations using Ollama (via Spring AI)
 - **Health Analytics**: Beautiful charts and trend analysis
 - **Smart Reminders**: Set medication and health appointment reminders
 - **PDF Export**: Generate comprehensive health reports for doctors
 - **Responsive Design**: Works seamlessly on all devices
-
-### AI Integration
-- **OpenAI GPT-3.5**: Provides intelligent health recommendations
-- **Nutrition Analysis**: AI-powered meal suggestions and dietary advice
-- **Mood Analysis**: Personalized mental health and wellness tips
-- **Trend Analysis**: Identifies patterns in health data
+- **Doctor Portal**: Connect with real doctors for real-time chat and consultations
+- **Mental Health Support**: Access AI-driven and doctor-led mental health sessions
+- **Real-Time Chat**: Communicate instantly using WebSocket-based chat
 
 ## 🚀 Quick Start
 
@@ -24,7 +21,7 @@ HealthVerse is a comprehensive health tracking application that combines daily h
 - Java 21 or higher
 - Maven 3.6+
 - MongoDB (local or cloud)
-- OpenAI API key
+- [Ollama](https://ollama.com/) (local LLM server)
 
 ### Installation
 
@@ -38,18 +35,26 @@ HealthVerse is a comprehensive health tracking application that combines daily h
    - Install MongoDB locally or use MongoDB Atlas
    - Update `application.properties` with your MongoDB connection string
 
-3. **Set up OpenAI API**
-   - Get your API key from [OpenAI Platform](https://platform.openai.com/)
-   - Update the API key in `application.properties`
+3. **Set up Ollama**
+   - Download and install Ollama from [Ollama’s website](https://ollama.com/)
+   - Start the Ollama server locally (default: `http://localhost:11434`)
+   - Pull your desired model (e.g., llama2):
+     ```bash
+     ollama pull llama2
+     ```
+   - Update the Ollama config in `application.properties` (see below)
 
-4. **Run the application**
+4. **Configure Application Properties**
+   - Copy `src/main/resources/application-sample.properties` to `src/main/resources/application.properties`.
+   - Fill in your MongoDB and Ollama credentials.
+
+5. **Run the application**
    ```bash
-   mvn spring-boot:run
+   ./mvnw spring-boot:run
    ```
 
-5. **Access the application**
+6. **Access the application**
    - Open your browser and go to `http://localhost:8090`
-   - Start logging your health data!
 
 ## 📁 Project Structure
 
@@ -92,10 +97,11 @@ HealthTracker/
 ## 🛠️ Technology Stack
 
 ### Backend
-- **Spring Boot 3.5.3**: Main framework
-- **Spring AI**: OpenAI integration
+- **Spring Boot**: Main framework
+- **Spring AI**: Ollama integration
 - **Spring Data MongoDB**: Database operations
 - **Spring Security**: Authentication & authorization
+- **WebSocket**: Real-time chat
 - **Thymeleaf**: Server-side templating
 - **iText PDF**: PDF generation
 
@@ -109,7 +115,7 @@ HealthTracker/
 - **MongoDB**: NoSQL database for flexible health data storage
 
 ### AI/ML
-- **OpenAI GPT-3.5**: Natural language processing and health insights
+- **Ollama (via Spring AI)**: Natural language processing and health insights
 
 ## 📊 Key Features Explained
 
@@ -148,16 +154,17 @@ HealthTracker/
 ### Application Properties
 ```properties
 # Server Configuration
-server.port=8090
-spring.application.name=HealthVerse
+server.port=8080
+spring.application.name=HealthTracker
 
-# OpenAI Configuration
-spring.ai.openai.api-key=your-openai-api-key
-spring.ai.openai.chat.model=gpt-3.5-turbo
+# Ollama AI Configuration
+spring.ai.ollama.api-key=your_ollama_api_key
+spring.ai.ollama.base-url=http://localhost:11434
+spring.ai.ollama.model=llama2
 
 # MongoDB Configuration
-spring.data.mongodb.uri=mongodb://localhost:27017/healthverse
-spring.data.mongodb.database=healthverse
+spring.data.mongodb.uri=mongodb://localhost:27017/healthtracker
+spring.data.mongodb.database=healthtracker
 
 # Thymeleaf Configuration
 spring.thymeleaf.cache=false
@@ -178,7 +185,7 @@ java -jar target/HealthTracker-0.0.1-SNAPSHOT.jar
 
 ### Production Deployment
 1. Set up MongoDB (local or cloud)
-2. Configure OpenAI API key
+2. Configure Ollama (see above)
 3. Build the application: `mvn clean package`
 4. Deploy the JAR file to your server
 5. Configure environment variables for production settings
@@ -220,11 +227,12 @@ For support and questions:
 
 ## 🙏 Acknowledgments
 
-- OpenAI for providing the AI capabilities
+- Ollama for providing the AI capabilities
+- Spring AI for seamless AI integration
 - Spring Boot team for the excellent framework
 - Bootstrap team for the responsive UI components
 - Chart.js for the beautiful charts and graphs
 
 ---
 
-**HealthVerse** - Your personal health journal with AI-powered insights! 💙 
+**HealthTracker** - Your personal health journal with AI-powered insights! 💙 
