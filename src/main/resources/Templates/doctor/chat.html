@@ -185,12 +185,13 @@
         /*<![CDATA[*/
         
         // Chat configuration
-        const chatId = /*[[${chatId}]]*/ 'default';
-        const sender = /*[[${sender}]]*/ 'doctor@example.com';
-        const senderName = /*[[${senderName}]]*/ 'Doctor';
-        const senderType = /*[[${senderType}]]*/ 'doctor';
-        const recipient = /*[[${recipient}]]*/ 'user@example.com';
+        const chatId = /*[[${consultation.chatId}]]*/ 'default';
+        const sender = /*[[${doctor.email}]]*/ 'doctor@example.com';
+        const senderName = /*[[${doctor.name}]]*/ 'Doctor';
+        const senderType = 'doctor';
+        const recipient = /*[[${consultation.patientEmail}]]*/ 'user@example.com';
         const patientName = /*[[${consultation.patientName}]]*/ 'Patient';
+        const consultationId = /*[[${consultation.id}]]*/ 'default';
         
         let stompClient = null;
         
@@ -203,13 +204,22 @@
                 console.log('Connected: ' + frame);
                 
                 // Subscribe to the chat topic
-                stompClient.subscribe('/topic/chat/' + chatId, function (message) {
+                stompClient.subscribe('/topic/messages', function (message) {
                     const chatMessage = JSON.parse(message.body);
-                    displayMessage(chatMessage);
+                    if (chatMessage.chatId === chatId) {
+                        displayMessage(chatMessage);
+                    }
                 });
                 
                 // Load existing messages
-                loadChatHistory();
+                fetch('/api/chat/history/' + chatId)
+                    .then(response => response.json())
+                    .then(messages => {
+                        const chatMessages = document.getElementById('chatMessages');
+                        chatMessages.innerHTML = ''; // Clear placeholder
+                        messages.forEach(message => displayMessage(message));
+                    })
+                    .catch(error => console.error('Error loading chat history:', error));
             }, function(error) {
                 console.error('WebSocket connection error:', error);
                 setTimeout(connect, 5000); // Reconnect after 5 seconds
@@ -222,18 +232,31 @@
             const messageContent = messageInput.value.trim();
             
             if (messageContent && stompClient) {
-                const chatMessage = {
-                    chatId: chatId,
-                    sender: sender,
-                    senderName: senderName,
-                    senderType: senderType,
-                    recipient: recipient,
-                    content: messageContent,
-                    messageType: 'text'
-                };
-                
-                stompClient.send('/app/chat.sendMessage', {}, JSON.stringify(chatMessage));
-                messageInput.value = '';
+                // First save the message via REST API
+                fetch(`/doctor/request-chat/${consultationId}/send`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `message=${encodeURIComponent(messageContent)}`
+                })
+                .then(response => response.json())
+                .then(savedMessage => {
+                    // Then broadcast via WebSocket
+                    const chatMessage = {
+                        chatId: chatId,
+                        sender: sender,
+                        senderName: senderName,
+                        senderType: senderType,
+                        recipient: recipient,
+                        content: messageContent,
+                        messageType: 'text'
+                    };
+                    
+                    stompClient.send('/app/chat.sendMessage', {}, JSON.stringify(chatMessage));
+                    messageInput.value = '';
+                })
+                .catch(error => console.error('Error sending message:', error));
             }
         }
         

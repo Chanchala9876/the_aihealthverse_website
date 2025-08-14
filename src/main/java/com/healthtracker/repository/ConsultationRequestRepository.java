@@ -16,6 +16,15 @@ public interface ConsultationRequestRepository extends MongoRepository<Consultat
     // Find all requests by a specific patient
     List<ConsultationRequest> findByPatientIdOrderByRequestedAtDesc(String patientId);
     
+    // Find requests by doctor email and status
+    List<ConsultationRequest> findByDoctorEmailAndStatus(String doctorEmail, String status);
+    
+    // Find requests by doctor email
+    List<ConsultationRequest> findByDoctorEmail(String doctorEmail);
+    
+    // Find requests by patient email
+    List<ConsultationRequest> findByPatientEmail(String patientEmail);
+    
     // Find requests by doctor email
     List<ConsultationRequest> findByDoctorEmailOrderByRequestedAtDesc(String doctorEmail);
     
@@ -39,4 +48,7 @@ public interface ConsultationRequestRepository extends MongoRepository<Consultat
     
     // Find active requests (accepted/in-progress) for a doctor
     List<ConsultationRequest> findByDoctorIdAndStatusIn(String doctorId, List<String> statuses);
+    
+    // Find requests by patient email, doctor id and status
+    List<ConsultationRequest> findByPatientEmailAndDoctorIdAndStatus(String patientEmail, String doctorId, String status);
 }

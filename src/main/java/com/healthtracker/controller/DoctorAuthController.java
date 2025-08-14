@@ -3,6 +3,7 @@ package com.healthtracker.controller;
 import com.healthtracker.model.Doctor;
 import com.healthtracker.model.Consultation;
 import com.healthtracker.repository.DoctorRepository;
+import com.healthtracker.service.ChatService;
 import com.healthtracker.service.DoctorService;
 import com.healthtracker.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,23 +39,34 @@ public class DoctorAuthController {
 
     private static final Logger logger = LoggerFactory.getLogger(DoctorAuthController.class);
 
-    @Autowired
-    private DoctorRepository doctorRepository;
+    private final DoctorRepository doctorRepository;
+    private final DoctorService doctorService;
+    private final NotificationService notificationService;
+    private final ChatMessageRepository chatMessageRepository;
+    private final UserRepository userRepository;
+    private final ConsultationRequestRepository consultationRequestRepository;
+    private final JavaMailSender mailSender;
+    private final ChatService chatService;
 
     @Autowired
-    private DoctorService doctorService;
-
-    @Autowired
-    private NotificationService notificationService;
-
-    @Autowired
-    private ChatMessageRepository chatMessageRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-    
-    @Autowired
-    private ConsultationRequestRepository consultationRequestRepository;
+    public DoctorAuthController(
+            DoctorRepository doctorRepository,
+            DoctorService doctorService,
+            NotificationService notificationService,
+            ChatMessageRepository chatMessageRepository,
+            UserRepository userRepository,
+            ConsultationRequestRepository consultationRequestRepository,
+            JavaMailSender mailSender,
+            ChatService chatService) {
+        this.doctorRepository = doctorRepository;
+        this.doctorService = doctorService;
+        this.notificationService = notificationService;
+        this.chatMessageRepository = chatMessageRepository;
+        this.userRepository = userRepository;
+        this.consultationRequestRepository = consultationRequestRepository;
+        this.mailSender = mailSender;
+        this.chatService = chatService;
+    }
 
     // Doctor Login Page
     @GetMapping("/login")
@@ -143,12 +157,19 @@ public class DoctorAuthController {
                     .filter(c -> "completed".equals(c.getStatus()))
                     .toList();
 
+                // Load active chat requests and filter out completed ones
+                List<ConsultationRequest> activeChats = acceptedRequests.stream()
+                    .filter(req -> "IN_PROGRESS".equals(req.getStatus()) || "ACCEPTED".equals(req.getStatus()))
+                    .toList();
+                
+                // Add all model attributes
                 model.addAttribute("doctor", doctor);
-                // New consultation request system
                 model.addAttribute("pendingRequests", pendingRequests);
-                model.addAttribute("acceptedRequests", acceptedRequests);
+                model.addAttribute("acceptedRequests", acceptedRequests.stream()
+                    .filter(req -> !"COMPLETED".equals(req.getStatus()))
+                    .toList());
+                model.addAttribute("activeChats", activeChats);
                 model.addAttribute("completedRequests", completedRequests);
-                // Old consultation system (for backward compatibility)
                 model.addAttribute("pendingConsultations", pendingConsultations);
                 model.addAttribute("activeConsultations", activeConsultations);
                 model.addAttribute("completedConsultations", completedConsultations);
@@ -355,13 +376,39 @@ public class DoctorAuthController {
                 request.setRespondedAt(LocalDateTime.now());
                 consultationRequestRepository.save(request);
                 
+                // Send notification to patient about acceptance
+                String patientEmail = request.getPatientEmail();
+                String doctorName = request.getDoctorName();
+                String chatId = request.getChatId();
+                
+                SimpleMailMessage mailMessage = new SimpleMailMessage();
+                mailMessage.setTo(patientEmail);
+                mailMessage.setSubject("Your consultation request has been accepted - HealthVerse");
+                mailMessage.setText(
+                    "Dear " + request.getPatientName() + ",\n\n" +
+                    "Dr. " + doctorName + " has accepted your consultation request.\n\n" +
+                    "You can now start chatting with the doctor at:\n" +
+                    "http://localhost:8090/consultation/chat/" + chatId + "\n\n" +
+                    "Best regards,\nHealthVerse Team"
+                );
+                try {
+                    mailSender.send(mailMessage);
+                } catch (Exception mailError) {
+                    logger.warn("Failed to send acceptance email to patient", mailError);
+                    // Continue processing even if email fails
+                }
+                
                 redirectAttributes.addFlashAttribute("success", "Consultation request accepted! You can now chat with the patient.");
+                
+                // Redirect to the chat interface
+                return "redirect:/doctor/start-chat/" + requestId;
             } else {
+                logger.warn("Consultation request not found with ID: {}", requestId);
                 redirectAttributes.addFlashAttribute("error", "Consultation request not found.");
             }
         } catch (Exception e) {
-            logger.error("Error accepting consultation request", e);
-            redirectAttributes.addFlashAttribute("error", "Failed to accept consultation request");
+            logger.error("Error accepting consultation request: {}", e.getMessage(), e);
+            redirectAttributes.addFlashAttribute("error", "Failed to accept consultation request: " + e.getMessage());
         }
         
         return "redirect:/doctor/dashboard";
@@ -399,47 +446,15 @@ public class DoctorAuthController {
         return "redirect:/doctor/dashboard";
     }
     
-    // NEW: Start chat from consultation request
-    @GetMapping("/request-chat/{requestId}")
-    public String startChatFromRequest(@PathVariable String requestId,
-                                     HttpSession session,
-                                     Model model) {
+    // Redirect to chat through DoctorChatController
+    @GetMapping("/start-chat/{requestId}")
+    public String redirectToChat(@PathVariable String requestId,
+                               HttpSession session) {
         String doctorId = (String) session.getAttribute("doctorId");
         if (doctorId == null) {
             return "redirect:/doctor/login";
         }
-        
-        try {
-            Optional<ConsultationRequest> requestOpt = consultationRequestRepository.findById(requestId);
-            Optional<Doctor> doctorOpt = doctorRepository.findById(doctorId);
-            
-            if (requestOpt.isPresent() && doctorOpt.isPresent()) {
-                ConsultationRequest request = requestOpt.get();
-                Doctor doctor = doctorOpt.get();
-                
-                // Update request status to IN_PROGRESS if it's ACCEPTED
-                if ("ACCEPTED".equals(request.getStatus())) {
-                    request.setStatus("IN_PROGRESS");
-                    consultationRequestRepository.save(request);
-                }
-                
-                model.addAttribute("consultationRequest", request);
-                model.addAttribute("doctor", doctor);
-                model.addAttribute("chatId", request.getChatId());
-                model.addAttribute("sender", doctor.getEmail());
-                model.addAttribute("senderName", doctor.getName());
-                model.addAttribute("senderType", "doctor");
-                model.addAttribute("recipient", request.getPatientEmail());
-                model.addAttribute("title", "Chat with " + request.getPatientName());
-                
-                return "doctor/chat";
-            } else {
-                return "redirect:/doctor/dashboard?error=request-not-found";
-            }
-        } catch (Exception e) {
-            logger.error("Error starting chat from request", e);
-            return "redirect:/doctor/dashboard?error=chat-start-failed";
-        }
+        return "redirect:/doctor/request-chat/" + requestId;
     }
 
     // Doctor Profile

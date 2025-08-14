@@ -10,6 +10,8 @@ import com.healthtracker.repository.MentalHealthAnalysisRepository;
 import com.healthtracker.repository.UserRepository;
 import com.healthtracker.repository.ConsultationRequestRepository;
 import com.healthtracker.service.ChatService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,27 +26,36 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.io.UnsupportedEncodingException;
+import org.springframework.web.util.UriUtils;
 
 @Controller
 @RequestMapping("/mental-health")
 public class MentalHealthController {
-    @Autowired
-    private DoctorRepository doctorRepository;
+    private static final Logger logger = LoggerFactory.getLogger(MentalHealthController.class);
+    
+    private final DoctorRepository doctorRepository;
+    private final MentalHealthAnalysisRepository mentalHealthAnalysisRepository;
+    private final UserRepository userRepository;
+    private final JavaMailSender mailSender;
+    private final ConsultationRequestRepository consultationRequestRepository;
+    private final ChatService chatService;
     
     @Autowired
-    private MentalHealthAnalysisRepository mentalHealthAnalysisRepository;
-    
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private JavaMailSender mailSender;
-    
-    @Autowired
-    private ConsultationRequestRepository consultationRequestRepository;
-    
-    @Autowired
-    private ChatService chatService;
+    public MentalHealthController(
+            DoctorRepository doctorRepository,
+            MentalHealthAnalysisRepository mentalHealthAnalysisRepository,
+            UserRepository userRepository,
+            JavaMailSender mailSender,
+            ConsultationRequestRepository consultationRequestRepository,
+            ChatService chatService) {
+        this.doctorRepository = doctorRepository;
+        this.mentalHealthAnalysisRepository = mentalHealthAnalysisRepository;
+        this.userRepository = userRepository;
+        this.mailSender = mailSender;
+        this.consultationRequestRepository = consultationRequestRepository;
+        this.chatService = chatService;
+    }
 
     @GetMapping
     public String mentalHealthLanding(Model model) {
@@ -54,18 +65,46 @@ public class MentalHealthController {
     }
 
     @GetMapping("/chat/{doctorId}")
-    public String chatWithDoctor(@PathVariable String doctorId, Model model) {
-        Doctor doctor = doctorRepository.findById(doctorId).orElse(null);
-        if (doctor != null) {
+    public String chatWithDoctor(@PathVariable String doctorId, 
+                               @RequestParam(required = false) String sessionId,
+                               Model model) {
+        try {
+            Doctor doctor = doctorRepository.findById(doctorId).orElse(null);
+            if (doctor == null) {
+                return "redirect:/mental-health?error=doctor-not-found";
+            }
+            
             String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userRepository.findByEmail(userEmail).orElse(null);
+            if (user == null) {
+                return "redirect:/mental-health?error=user-not-found";
+            }
+            
             String chatId = userEmail + "_" + doctor.getEmail();
+            
+            // Get existing consultation request if any
+            List<ConsultationRequest> activeRequests = consultationRequestRepository
+                .findByPatientEmailAndDoctorIdAndStatus(userEmail, doctorId, "IN_PROGRESS");
+            
+            ConsultationRequest activeRequest = activeRequests.isEmpty() ? null : activeRequests.get(0);
+            
             model.addAttribute("chatId", chatId);
             model.addAttribute("sender", userEmail);
+            model.addAttribute("senderName", user.getFirstName() + " " + user.getLastName());
             model.addAttribute("recipient", doctor.getEmail());
             model.addAttribute("doctorName", doctor.getName());
+            model.addAttribute("consultationRequest", activeRequest);
+            model.addAttribute("sessionId", sessionId);
+            
+            // Get chat history
+            List<ChatMessage> chatHistory = chatService.getChatMessages(chatId);
+            model.addAttribute("chatHistory", chatHistory);
+            
             return "chat";
+        } catch (Exception e) {
+            logger.error("Error in chatWithDoctor: {}", e.getMessage(), e);
+            return "redirect:/mental-health?error=chat-error";
         }
-        return "redirect:/mental-health?error=doctor-not-found";
     }
 
     @GetMapping("/ai-chat")
@@ -99,7 +138,8 @@ public class MentalHealthController {
                 return "redirect:/mental-health?error=user-or-doctor-not-found";
             }
             
-            // Create consultation request
+            // Create consultation request with proper initialization
+            String chatId = user.getEmail() + "_" + doctor.getEmail();
             ConsultationRequest request = new ConsultationRequest(
                 user.getId(),
                 user.getFirstName() + " " + user.getLastName(),
@@ -109,29 +149,52 @@ public class MentalHealthController {
                 doctor.getEmail(),
                 message
             );
+            request.setStatus("PENDING");
+            request.setRequestedAt(LocalDateTime.now());
+            request.setChatId(chatId);
             
-            System.out.println("Creating ConsultationRequest:");
-            System.out.println("Patient ID: " + user.getId());
-            System.out.println("Patient Name: " + user.getFirstName() + " " + user.getLastName());
-            System.out.println("Doctor ID: " + doctor.getId());
-            System.out.println("Chat ID: " + request.getChatId());
-            System.out.println("Status: " + request.getStatus());
+            logger.info("Creating ConsultationRequest:");
+            logger.info("Patient ID: {}", user.getId());
+            logger.info("Patient Name: {}", user.getFirstName() + " " + user.getLastName());
+            logger.info("Doctor ID: {}", doctor.getId());
+            logger.info("Chat ID: {}", chatId);
+            logger.info("Status: {}", request.getStatus());
             
             // Save the consultation request
             ConsultationRequest savedRequest = consultationRequestRepository.save(request);
             System.out.println("ConsultationRequest saved with ID: " + savedRequest.getId());
             
             // Create the initial chat message
-            ChatMessage initialMessage = new ChatMessage(
-                request.getChatId(),
-                user.getEmail(),
-                user.getFirstName() + " " + user.getLastName(),
-                "patient",
-                doctor.getEmail(),
-                message,
-                "text"
-            );
-            chatService.saveMessage(initialMessage);
+            try {
+                // Create system notification message
+                ChatMessage systemMessage = new ChatMessage(
+                    request.getChatId(),
+                    "system",
+                    "System",
+                    "system",
+                    doctor.getEmail(),
+                    "New consultation request from " + user.getFirstName() + " " + user.getLastName(),
+                    "notification"
+                );
+                chatService.saveMessage(systemMessage);
+                
+                // Create the actual patient message
+                ChatMessage initialMessage = new ChatMessage(
+                    request.getChatId(),
+                    user.getEmail(),
+                    user.getFirstName() + " " + user.getLastName(),
+                    "patient",
+                    doctor.getEmail(),
+                    message,
+                    "text"
+                );
+                chatService.saveMessage(initialMessage);
+                
+                logger.info("Initial chat messages created for consultation {}", request.getChatId());
+            } catch (Exception e) {
+                logger.error("Failed to save chat messages: {}", e.getMessage(), e);
+                // Continue processing even if chat message creation fails
+            }
             
             // Send email notification to doctor
             try {
@@ -162,11 +225,21 @@ public class MentalHealthController {
                 System.err.println("Failed to send email notification: " + e.getMessage());
             }
             
-            // Redirect user to chat page
-            return "redirect:/mental-health/chat/" + doctorId + "?success=request-sent";
+            // Finalize the consultation request and redirect to chat
+            if (savedRequest != null && savedRequest.getChatId() != null) {
+                // The model attributes won't persist through a redirect, 
+                // so we'll add necessary information as query parameters
+                return "redirect:/consultation/chat/" + savedRequest.getChatId() 
+                    + "?status=pending"
+                    + "&requestId=" + savedRequest.getId()
+                    + "&doctorName=" + java.net.URLEncoder.encode(doctor.getName(), "UTF-8");
+            } else {
+                logger.error("Failed to create consultation request properly");
+                return "redirect:/mental-health?error=request-creation-failed";
+            }
             
         } catch (Exception e) {
-            System.err.println("Error in contactDoctor: " + e.getMessage());
+            logger.error("Error in contactDoctor: {}", e.getMessage(), e);
             return "redirect:/mental-health?error=request-failed";
         }
     }

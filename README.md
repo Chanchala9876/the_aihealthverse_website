@@ -103,7 +103,7 @@ HealthTracker/
 - **Spring Security**: Authentication & authorization
 - **WebSocket**: Real-time chat
 - **Thymeleaf**: Server-side templating
-- **iText PDF**: PDF generation
+
 
 ### Frontend
 - **Bootstrap 5**: Responsive UI framework
@@ -122,7 +122,7 @@ HealthTracker/
 ### 1. Health Logging
 - **Mood Tracking**: Select from predefined moods (Happy, Good, Neutral, Tired, Stressed, Sad)
 - **Meal Logging**: Record daily meals and snacks
-- **Sleep Tracking**: Log sleep duration and quality
+
 - **Symptom Monitoring**: Track health symptoms and concerns
 - **Notes**: Add additional observations
 
@@ -173,15 +173,7 @@ spring.thymeleaf.prefix=classpath:/templates/
 
 ## 🚀 Deployment
 
-### Local Development
-```bash
-# Run with Maven
-mvn spring-boot:run
 
-# Or build and run JAR
-mvn clean package
-java -jar target/HealthTracker-0.0.1-SNAPSHOT.jar
-```
 
 ### Production Deployment
 1. Set up MongoDB (local or cloud)
@@ -205,34 +197,3 @@ java -jar target/HealthTracker-0.0.1-SNAPSHOT.jar
 - **Integration APIs**: Connect with fitness trackers and health devices
 - **Machine Learning**: Custom ML models for health prediction
 - **Social Features**: Share health goals with friends and family
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Submit a pull request
-
-## 📝 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🆘 Support
-
-For support and questions:
-- Email: support@healthverse.com
-- Website: www.healthverse.com
-- Phone: +1 (555) 123-4567
-
-## 🙏 Acknowledgments
-
-- Ollama for providing the AI capabilities
-- Spring AI for seamless AI integration
-- Spring Boot team for the excellent framework
-- Bootstrap team for the responsive UI components
-- Chart.js for the beautiful charts and graphs
-
----
-
-**HealthTracker** - Your personal health journal with AI-powered insights! 💙 

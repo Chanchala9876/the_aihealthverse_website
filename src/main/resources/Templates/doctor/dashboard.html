@@ -197,11 +197,9 @@
                                                 <div class="col-md-4 text-end">
                                                     <span class="status-badge bg-warning text-dark mb-2 d-block">🕒 Pending</span>
                                                     <div class="btn-group-vertical w-100">
-                                                        <form th:action="@{'/doctor/request/' + ${request.id} + '/accept'}" method="post" class="mb-2">
-                                                            <button type="submit" class="btn btn-success btn-action w-100">
-                                                                <i class="fas fa-check me-1"></i>Accept Request
-                                                            </button>
-                                                        </form>
+                                                        <a th:href="@{'/doctor/request-chat/' + ${request.id}}" class="btn btn-success btn-action w-100">
+                                                            <i class="fas fa-comments me-1"></i>Start Chat
+                                                        </a>
                                                         <button type="button" class="btn btn-outline-danger btn-action w-100" 
                                                                 data-bs-toggle="modal" 
                                                                 th:data-bs-target="'#rejectRequestModal-' + ${request.id}">
@@ -267,7 +265,9 @@
                                         <i class="fas fa-comments me-2"></i>Active Consultations
                                     </h5>
                                     <!-- Active Mental Health Consultation Requests -->
-                                    <div th:each="request : ${acceptedRequests}" class="consultation-card card mb-3" style="border-left: 4px solid #10B981;">
+                                    <div th:each="request : ${acceptedRequests}" class="consultation-card card mb-3" 
+                                         th:data-consultation-id="${request.id}"
+                                         style="border-left: 4px solid #10B981;">
                                         <div class="card-body">
                                             <div class="row align-items-center">
                                                 <div class="col-md-8">
@@ -326,7 +326,7 @@
                                                 <div class="col-md-4 text-end">
                                                     <span class="status-badge bg-success text-white mb-2 d-block">Active</span>
                                                     <div class="btn-group-vertical w-100">
-                                                        <a th:href="@{'/doctor/chat/' + ${consultation.id}}" class="btn btn-primary btn-action mb-2">
+                                                        <a th:href="@{'/doctor/request-chat/' + ${request.id}}" class="btn btn-primary btn-action mb-2">
                                                             <i class="fas fa-comments me-1"></i>Chat
                                                         </a>
                                                         <button type="button" class="btn btn-outline-secondary btn-action" 
@@ -474,5 +474,68 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    
+    <script th:inline="javascript">
+        const doctorEmail = /*[[${doctor.email}]]*/ 'doctor@example.com';
+        
+        // Connect to WebSocket
+        const socket = new SockJS('/ws');
+        const stompClient = Stomp.over(socket);
+        
+        stompClient.connect({}, function(frame) {
+            console.log('Connected to WebSocket');
+            
+            // Subscribe to consultation updates
+            stompClient.subscribe('/user/' + doctorEmail + '/queue/consultation-updates', function(message) {
+                const consultation = JSON.parse(message.body);
+                updateConsultationCard(consultation);
+            });
+        });
+        
+        function updateConsultationCard(consultation) {
+            const card = document.querySelector(`[data-consultation-id="${consultation.id}"]`);
+            if (card) {
+                // Move card to appropriate section based on status
+                const targetSection = consultation.status === 'IN_PROGRESS' ? 
+                    document.querySelector('#active .card-body') :
+                    document.querySelector('#completed .card-body');
+                
+                if (targetSection) {
+                    card.remove();
+                    targetSection.appendChild(card);
+                    
+                    // Update counts
+                    updateCounts();
+                }
+            }
+        }
+        
+        function updateCounts() {
+            // Update pending count
+            const pendingCount = document.querySelectorAll('#pending .consultation-card').length;
+            document.querySelector('#pending-tab .badge').textContent = pendingCount;
+            
+            // Update active count
+            const activeCount = document.querySelectorAll('#active .consultation-card').length;
+            document.querySelector('#active-tab .badge').textContent = activeCount;
+            
+            // Update completed count
+            const completedCount = document.querySelectorAll('#completed .consultation-card').length;
+            document.querySelector('#completed-tab .badge').textContent = completedCount;
+            
+            // Update stat cards
+            document.querySelector('.stats-card:nth-child(1) .stats-number').textContent = pendingCount;
+            document.querySelector('.stats-card:nth-child(2) .stats-number').textContent = activeCount;
+            document.querySelector('.stats-card:nth-child(3) .stats-number').textContent = completedCount;
+            document.querySelector('.stats-card:nth-child(4) .stats-number').textContent = 
+                pendingCount + activeCount + completedCount;
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <script src="/js/doctor-dashboard.js"></script>
+    <input type="hidden" id="doctorEmail" th:value="${doctor.email}" />
 </body>
 </html>

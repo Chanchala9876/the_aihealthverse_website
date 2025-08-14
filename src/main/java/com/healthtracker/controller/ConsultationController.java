@@ -145,24 +145,25 @@ public class ConsultationController {
     }
 
     // Chat Interface
-    @GetMapping("/consultation/chat/{consultationId}")
-    public String showChat(@PathVariable String consultationId, Model model) {
+    @GetMapping("/consultation/chat/{chatId}")
+    public String showChat(@PathVariable String chatId, @RequestParam(required = false) String status, Model model) {
         try {
-            // Get consultation details
-            Optional<Consultation> consultationOpt = doctorService.getConsultationById(consultationId);
-            if (consultationOpt.isEmpty()) {
-                model.addAttribute("errorMessage", "Consultation not found");
-                return "error";
-            }
-
-            Consultation consultation = consultationOpt.get();
+            // Get current user
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String currentUserEmail = authentication.getName();
             
             // Get chat messages
-            List<ChatMessage> messages = chatService.getChatMessages(consultationId);
+            List<ChatMessage> messages = chatService.getChatMessages(chatId);
             
-            model.addAttribute("consultation", consultation);
+            // Add chat details to model
+            model.addAttribute("chatId", chatId);
             model.addAttribute("messages", messages);
-            model.addAttribute("title", "Chat with " + consultation.getDoctorName() + " - HealthVerse");
+            model.addAttribute("currentUserEmail", currentUserEmail);
+            
+            if ("pending".equals(status)) {
+                model.addAttribute("status", "pending");
+                model.addAttribute("statusMessage", "Your consultation request has been sent. Please wait for the doctor to accept.");
+            }
             
             return "consultation/chat";
         } catch (Exception e) {
