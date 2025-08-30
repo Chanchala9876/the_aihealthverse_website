@@ -4,29 +4,68 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${title}">Patient Dashboard - HealthVerse</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="/css/healthverse-modern.css" rel="stylesheet">
 </head>
 <body>
-    <div th:replace="fragments/navbar :: navbar"></div>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-heartbeat me-2"></i>HealthVerse
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="fas fa-home me-1"></i>Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/dashboard"><i class="fas fa-chart-line me-1"></i>Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/health/log"><i class="fas fa-plus me-1"></i>Log Health</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/health/entries"><i class="fas fa-list me-1"></i>Entries</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/health/analysis"><i class="fas fa-brain me-1"></i>Analysis</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/reminders"><i class="fas fa-bell me-1"></i>Reminders</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/mental-health"><i class="fas fa-user-md me-1"></i>Mental Health</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col-12">
-                <h1 class="mb-4">
+    <div class="container">
+        <div class="page-container">
+            <div class="page-header">
+                <h1 class="page-title">
                     <i class="fas fa-tachometer-alt me-2"></i>
                     Welcome back, <span th:text="${user.username}">Patient</span>!
                 </h1>
+                <p class="page-subtitle">Your personalized health dashboard with AI-powered insights</p>
             </div>
-        </div>
 
-        <div class="row mb-4">
-            <!-- Quick Actions -->
-            <div class="col-md-6 col-lg-3 mb-3">
-                <div class="card h-100 text-center">
-                    <div class="card-body">
-                        <i class="fas fa-plus-circle fa-3x text-primary mb-3"></i>
+            <div class="row mb-4">
+                <!-- Quick Actions -->
+                <div class="col-md-6 col-lg-3 mb-3">
+                    <div class="dashboard-card text-center">
+                        <div class="dashboard-icon mx-auto">
+                            <i class="fas fa-plus-circle"></i>
+                        </div>
                         <h5 class="card-title">Log Health Data</h5>
                         <p class="card-text">Record your daily health metrics</p>
                         <a href="/health/log" class="btn btn-primary">
@@ -34,12 +73,12 @@
                         </a>
                     </div>
                 </div>
-            </div>
 
-            <div class="col-md-6 col-lg-3 mb-3">
-                <div class="card h-100 text-center">
-                    <div class="card-body">
-                        <i class="fas fa-chart-line fa-3x text-success mb-3"></i>
+                <div class="col-md-6 col-lg-3 mb-3">
+                    <div class="dashboard-card text-center">
+                        <div class="dashboard-icon mx-auto" style="background: linear-gradient(135deg, var(--success-color), #059669);">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
                         <h5 class="card-title">View Entries</h5>
                         <p class="card-text">Review your health history</p>
                         <a href="/health/entries" class="btn btn-success">
@@ -47,77 +86,133 @@
                         </a>
                     </div>
                 </div>
-            </div>
 
-            <div class="col-md-6 col-lg-3 mb-3">
-                <div class="card h-100 text-center">
-                    <div class="card-body">
-                        <i class="fas fa-user-md fa-3x text-info mb-3"></i>
+                <div class="col-md-6 col-lg-3 mb-3">
+                    <div class="dashboard-card text-center">
+                        <div class="dashboard-icon mx-auto" style="background: linear-gradient(135deg, var(--accent-color), #0891B2);">
+                            <i class="fas fa-user-md"></i>
+                        </div>
                         <h5 class="card-title">Consultations</h5>
                         <p class="card-text">Connect with healthcare providers</p>
-                        <a href="/consultations/request" class="btn btn-info">
+                        <a href="/mental-health" class="btn" style="background: var(--accent-color); color: white;">
                             <i class="fas fa-calendar-plus me-2"></i>Request
                         </a>
                     </div>
                 </div>
-            </div>
 
-            <div class="col-md-6 col-lg-3 mb-3">
-                <div class="card h-100 text-center">
-                    <div class="card-body">
-                        <i class="fas fa-robot fa-3x text-warning mb-3"></i>
+                <div class="col-md-6 col-lg-3 mb-3">
+                    <div class="dashboard-card text-center">
+                        <div class="dashboard-icon mx-auto" style="background: linear-gradient(135deg, var(--warning-color), #D97706);">
+                            <i class="fas fa-robot"></i>
+                        </div>
                         <h5 class="card-title">AI Assistant</h5>
                         <p class="card-text">Get health insights and advice</p>
-                        <a href="/chat" class="btn btn-warning">
+                        <a href="/mental-health/ai-chat" class="btn btn-warning">
                             <i class="fas fa-comments me-2"></i>Chat Now
                         </a>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Recent Health Entries -->
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">
-                            <i class="fas fa-history me-2"></i>Recent Health Entries
-                        </h5>
-                        <a href="/health/entries" class="btn btn-sm btn-outline-primary">View All</a>
-                    </div>
-                    <div class="card-body">
-                        <div th:if="${recentEntries != null and !recentEntries.empty}">
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Weight (kg)</th>
-                                            <th>Blood Pressure</th>
-                                            <th>Heart Rate</th>
-                                            <th>Temperature (°C)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr th:each="entry : ${recentEntries}">
-                                            <td th:text="${#temporals.format(entry.date, 'MMM dd, yyyy')}"></td>
-                                            <td th:text="${entry.weight}"></td>
-                                            <td th:text="${entry.systolicPressure + '/' + entry.diastolicPressure}"></td>
-                                            <td th:text="${entry.heartRate}"></td>
-                                            <td th:text="${entry.temperature}"></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+            <!-- Recent Health Entries -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="dashboard-card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="fas fa-history me-2"></i>Recent Health Entries
+                            </h5>
+                            <a href="/health/entries" class="btn btn-sm btn-outline-primary">View All</a>
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${recentEntries != null and !recentEntries.isEmpty()}">
+                                <div class="table-responsive">
+                                    <table class="table table-hover modern-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Mood</th>
+                                                <th>Sleep</th>
+                                                <th>Symptoms</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="entry : ${recentEntries}">
+                                                <td th:text="${#temporals.format(entry.date, 'MMM dd, yyyy')}">Date</td>
+                                                <td>
+                                                    <span class="badge bg-info" th:text="${entry.mood}">Mood</span>
+                                                </td>
+                                                <td th:text="${entry.sleepHours + ' hours'}">Sleep</td>
+                                                <td th:text="${entry.symptoms ?: 'None'}">Symptoms</td>
+                                                <td>
+                                                    <a th:href="@{/health/entries/{id}(id=${entry.id})}" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div th:if="${recentEntries == null or recentEntries.isEmpty()}" class="text-center py-4">
+                                <div class="empty-state">
+                                    <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">No health entries yet</h5>
+                                    <p class="text-muted">Start tracking your health by adding your first entry!</p>
+                                    <a href="/health/log" class="btn btn-primary">
+                                        <i class="fas fa-plus me-2"></i>Add First Entry
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                        <div th:if="${recentEntries == null or recentEntries.empty}" class="text-center py-4">
-                            <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
-                            <h6 class="text-muted">No health entries yet</h6>
-                            <p class="text-muted">Start tracking your health by logging your first entry!</p>
-                            <a href="/health/log" class="btn btn-primary">
-                                <i class="fas fa-plus me-2"></i>Log Your First Entry
-                            </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Health Stats Overview -->
+            <div class="row mt-4">
+                <div class="col-md-3 mb-3">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-smile"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number" th:text="${averageMood ?: '0'}">7.5</h3>
+                            <p class="stat-label">Avg Mood</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, var(--success-color), #059669);">
+                            <i class="fas fa-bed"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number" th:text="${averageSleep ?: '0'}">7.2</h3>
+                            <p class="stat-label">Avg Sleep (hrs)</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, var(--accent-color), #0891B2);">
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number" th:text="${totalEntries ?: '0'}">12</h3>
+                            <p class="stat-label">Total Entries</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, var(--warning-color), #D97706);">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number" th:text="${streakDays ?: '0'}">5</h3>
+                            <p class="stat-label">Day Streak</p>
                         </div>
                     </div>
                 </div>
@@ -125,6 +220,6 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
