@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Log Health Entry - HealthVerse</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #4F46E5;
+            --secondary-color: #7C3AED;
+            --success-color: #10B981;
+            --warning-color: #F59E0B;
+            --danger-color: #EF4444;
+            --light-bg: #F8FAFC;
+            --dark-text: #1F2937;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--primary-color) !important;
+        }
+        
+        .nav-link {
+            font-weight: 500;
+            color: var(--dark-text) !important;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: var(--primary-color) !important;
+        }
+        
+        .main-content {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin: 2rem auto;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+        }
+        
+        .form-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .form-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark-text);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        .form-subtitle {
+            color: #6B7280;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: var(--dark-text);
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control {
+            border: 2px solid #E5E7EB;
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            border-radius: 10px;
+            padding: 15px 30px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+        }
+        
+        .mood-options {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .mood-option {
+            padding: 10px 20px;
+            border: 2px solid #E5E7EB;
+            border-radius: 25px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .mood-option:hover {
+            border-color: var(--primary-color);
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .mood-option.selected {
+            border-color: var(--primary-color);
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .footer {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+        
+        .help-text {
+            font-size: 0.875rem;
+            color: #6B7280;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-heartbeat me-2"></i>HealthVerse
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="fas fa-home me-1"></i>Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard"><i class="fas fa-chart-line me-1"></i>Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/health/log"><i class="fas fa-plus me-1"></i>Log Health</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/health/entries"><i class="fas fa-list me-1"></i>Entries</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/health/analysis"><i class="fas fa-brain me-1"></i>Analysis</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/reminders"><i class="fas fa-bell me-1"></i>Reminders</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/about"><i class="fas fa-info-circle me-1"></i>About</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="main-content">
+            <div class="form-card">
+                <h1 class="form-title">
+                    <i class="fas fa-plus-circle me-2"></i>Log Your Health Entry
+                </h1>
+                <p class="form-subtitle">Track your daily health metrics and get AI-powered insights</p>
+                
+                <form th:action="@{/health/log}" method="post">
+                    <!-- Mood Section -->
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="fas fa-smile me-2"></i>How are you feeling today?
+                        </label>
+                        <div class="mood-options">
+                            <div class="mood-option" data-mood="Happy">😊 Happy</div>
+                            <div class="mood-option" data-mood="Good">😌 Good</div>
+                            <div class="mood-option" data-mood="Neutral">😐 Neutral</div>
+                            <div class="mood-option" data-mood="Tired">😴 Tired</div>
+                            <div class="mood-option" data-mood="Stressed">😰 Stressed</div>
+                            <div class="mood-option" data-mood="Sad">😢 Sad</div>
+                        </div>
+                        <input type="hidden" name="mood" id="moodInput" required>
+                        <div class="help-text">Click on a mood that best describes how you're feeling</div>
+                    </div>
+                    
+                    <!-- Meals Section -->
+                    <div class="mb-4">
+                        <label for="meals" class="form-label">
+                            <i class="fas fa-utensils me-2"></i>What did you eat today?
+                        </label>
+                        <textarea class="form-control" id="meals" name="meals" rows="3" 
+                                placeholder="e.g., Breakfast: oatmeal with berries, Lunch: chicken salad, Dinner: grilled salmon with vegetables"
+                                required></textarea>
+                        <div class="help-text">List your meals and snacks for the day</div>
+                    </div>
+                    
+                    <!-- Symptoms Section -->
+                    <div class="mb-4">
+                        <label for="symptoms" class="form-label">
+                            <i class="fas fa-stethoscope me-2"></i>Any symptoms or health concerns?
+                        </label>
+                        <textarea class="form-control" id="symptoms" name="symptoms" rows="3" 
+                                placeholder="e.g., headache, fatigue, stomach ache, or none"
+                                required></textarea>
+                        <div class="help-text">Describe any symptoms you're experiencing, or write 'none' if you're feeling well</div>
+                    </div>
+                    
+                    <!-- Sleep Section -->
+                    <div class="mb-4">
+                        <label for="sleepHours" class="form-label">
+                            <i class="fas fa-bed me-2"></i>How many hours did you sleep last night?
+                        </label>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <input type="number" class="form-control" id="sleepHours" name="sleepHours" 
+                                       min="0" max="24" step="0.5" placeholder="e.g., 7.5" required>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <span class="me-2">Quality:</span>
+                                    <div class="btn-group" role="group">
+                                        <input type="radio" class="btn-check" name="sleepQuality" id="poor" value="poor">
+                                        <label class="btn btn-outline-secondary btn-sm" for="poor">Poor</label>
+                                        
+                                        <input type="radio" class="btn-check" name="sleepQuality" id="fair" value="fair">
+                                        <label class="btn btn-outline-secondary btn-sm" for="fair">Fair</label>
+                                        
+                                        <input type="radio" class="btn-check" name="sleepQuality" id="good" value="good">
+                                        <label class="btn btn-outline-secondary btn-sm" for="good">Good</label>
+                                        
+                                        <input type="radio" class="btn-check" name="sleepQuality" id="excellent" value="excellent">
+                                        <label class="btn btn-outline-secondary btn-sm" for="excellent">Excellent</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="help-text">Track both duration and quality of your sleep</div>
+                    </div>
+                    
+                    <!-- Notes Section -->
+                    <div class="mb-4">
+                        <label for="notes" class="form-label">
+                            <i class="fas fa-edit me-2"></i>Additional notes (optional)
+                        </label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3" 
+                                placeholder="Any additional thoughts, activities, or health observations..."></textarea>
+                        <div class="help-text">Optional: Add any other health-related notes or observations</div>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-2"></i>Submit & Get AI Insights
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Tips Card -->
+            <div class="form-card">
+                <h3 class="mb-3">
+                    <i class="fas fa-lightbulb me-2"></i>Tips for Better Health Tracking
+                </h3>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Log your entries at the same time each day</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Be honest about your mood and symptoms</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Include all meals and snacks</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Track sleep duration and quality</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Note any patterns or changes</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Review your AI insights regularly</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="fas fa-heartbeat me-2"></i>HealthVerse</h5>
+                    <p class="text-muted">Your personal health journal with AI-powered insights.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="text-muted">&copy; 2024 HealthVerse. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Mood selection functionality
+        document.querySelectorAll('.mood-option').forEach(option => {
+            option.addEventListener('click', function() {
+                // Remove selected class from all options
+                document.querySelectorAll('.mood-option').forEach(opt => opt.classList.remove('selected'));
+                // Add selected class to clicked option
+                this.classList.add('selected');
+                // Update hidden input
+                document.getElementById('moodInput').value = this.getAttribute('data-mood');
+            });
+        });
+        
+        // Form validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const mood = document.getElementById('moodInput').value;
+            if (!mood) {
+                e.preventDefault();
+                alert('Please select a mood');
+                return false;
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Health Tracker AI</title>
+</head>
+<body>
+    <h2>Daily Health Check</h2>
+    <form th:action="@{/analyze}" method="post">
+        <label>Mood:</label>
+        <input type="text" name="mood" required><br><br>
+        <label>Meals:</label>
+        <input type="text" name="meals" required><br><br>
+        <label>Symptoms:</label>
+        <input type="text" name="symptoms" required><br><br>
+        <label>Sleep Hours:</label>
+        <input type="number" name="sleepHours" required><br><br>
+        <input type="submit" value="Get AI Tip">
+    </form>
+
+    <div th:if="${suggestion}">
+        <h3>Wellness Tip:</h3>
+        <p th:text="${suggestion}"></p>
+    </div>
+</body>
+</html>
